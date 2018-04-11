@@ -79,8 +79,12 @@ class Util {
    */
   static formatDateTime(date) {
     const options = {
-      month: 'short', day: 'numeric', year: 'numeric',
-      hour: 'numeric', minute: 'numeric', timeZoneName: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      timeZoneName: 'short',
     };
     let formatter = new Intl.DateTimeFormat('en-US', options);
 
@@ -132,8 +136,11 @@ class Util {
    */
   static getURLDisplayName(parsedUrl, options) {
     // Closure optional properties aren't optional in tsc, so fallback needs undefined  values.
-    options = options || {numPathParts: undefined, preserveQuery: undefined,
-      preserveHost: undefined};
+    options = options || {
+      numPathParts: undefined,
+      preserveQuery: undefined,
+      preserveHost: undefined,
+    };
     const numPathParts = options.numPathParts !== undefined ? options.numPathParts : 2;
     const preserveQuery = options.preserveQuery !== undefined ? options.preserveQuery : true;
     const preserveHost = options.preserveHost || false;
@@ -162,8 +169,10 @@ class Util {
     // Always elide hexadecimal hash
     name = name.replace(/([a-f0-9]{7})[a-f0-9]{13}[a-f0-9]*/g, `$1${ELLIPSIS}`);
     // Also elide other hash-like mixed-case strings
-    name = name.replace(/([a-zA-Z0-9-_]{9})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9-_]{10,}/g,
-        `$1${ELLIPSIS}`);
+    name = name.replace(
+      /([a-zA-Z0-9-_]{9})(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9-_]{10,}/g,
+      `$1${ELLIPSIS}`
+    );
     // Also elide long number sequences
     name = name.replace(/(\d{3})\d{6,}/g, `$1${ELLIPSIS}`);
     // Merge any adjacent ellipses
@@ -184,9 +193,10 @@ class Util {
     if (name.length > MAX_LENGTH) {
       const dotIndex = name.lastIndexOf('.');
       if (dotIndex >= 0) {
-        name = name.slice(0, MAX_LENGTH - 1 - (name.length - dotIndex)) +
-            // Show file extension
-            `${ELLIPSIS}${name.slice(dotIndex)}`;
+        name =
+          name.slice(0, MAX_LENGTH - 1 - (name.length - dotIndex)) +
+          // Show file extension
+          `${ELLIPSIS}${name.slice(dotIndex)}`;
       } else {
         name = name.slice(0, MAX_LENGTH - 1) + ELLIPSIS;
       }
@@ -202,7 +212,11 @@ class Util {
    */
   static parseURL(url) {
     const parsedUrl = new URL(url);
-    return {file: Util.getURLDisplayName(parsedUrl), hostname: parsedUrl.hostname, origin: parsedUrl.origin};
+    return {
+      file: Util.getURLDisplayName(parsedUrl),
+      hostname: parsedUrl.hostname,
+      origin: parsedUrl.origin,
+    };
   }
 
   /**

@@ -10,10 +10,12 @@
 
 const UsesRelPreconnect = require('../../audits/uses-rel-preconnect.js');
 const assert = require('assert');
-const Util = require('../../report/v2/renderer/util');
 
 const mainResource = {
   url: 'https://www.example.com/',
+  parsedURL: {
+    securityOrigin: () => 'https://www.example.com',
+  },
   _endTime: 1,
 };
 
@@ -23,6 +25,9 @@ describe('Performance: uses-rel-preconnect audit', () => {
       mainResource,
       {
         url: 'https://www.example.com/request',
+        parsedURL: {
+          securityOrigin: () => 'https://www.example.com',
+        },
       },
     ];
     const artifacts = {
@@ -130,6 +135,9 @@ describe('Performance: uses-rel-preconnect audit', () => {
       {
         url: 'https://cdn.example.com/first',
         initiatorRequest: () => null,
+        parsedURL: {
+          securityOrigin: () => 'https://cdn.example.com',
+        },
         _startTime: 2,
         timing: {
           dnsStart: 100,
@@ -140,6 +148,9 @@ describe('Performance: uses-rel-preconnect audit', () => {
       {
         url: 'https://cdn.example.com/second',
         initiatorRequest: () => null,
+        parsedURL: {
+          securityOrigin: () => 'https://cdn.example.com',
+        },
         _startTime: 3,
         timing: {
           dnsStart: 300,
@@ -158,7 +169,7 @@ describe('Performance: uses-rel-preconnect audit', () => {
     assert.equal(rawValue, 200);
     assert.equal(extendedInfo.value.length, 1);
     assert.deepStrictEqual(extendedInfo.value, [
-      {url: 'https://cdn.example.com', wastedMs: Util.formatMilliseconds(200)},
+      {url: 'https://cdn.example.com', wastedMs: 200, type: 'ms'},
     ]);
   });
 
@@ -168,6 +179,9 @@ describe('Performance: uses-rel-preconnect audit', () => {
       {
         url: 'https://cdn.example.com/first',
         initiatorRequest: () => null,
+        parsedURL: {
+          securityOrigin: () => 'https://cdn.example.com',
+        },
         _startTime: 2,
         timing: {
           dnsStart: 100,
@@ -178,6 +192,9 @@ describe('Performance: uses-rel-preconnect audit', () => {
       {
         url: 'https://othercdn.example.com/second',
         initiatorRequest: () => null,
+        parsedURL: {
+          securityOrigin: () => 'https://othercdn.example.com',
+        },
         _startTime: 1.2,
         timing: {
           dnsStart: 100,
@@ -196,8 +213,8 @@ describe('Performance: uses-rel-preconnect audit', () => {
     assert.equal(rawValue, 300);
     assert.equal(extendedInfo.value.length, 2);
     assert.deepStrictEqual(extendedInfo.value, [
-      {url: 'https://cdn.example.com', wastedMs: Util.formatMilliseconds(200)},
-      {url: 'https://othercdn.example.com', wastedMs: Util.formatMilliseconds(300)},
+      {url: 'https://cdn.example.com', wastedMs: 200, type: 'ms'},
+      {url: 'https://othercdn.example.com', wastedMs: 300, type: 'ms'},
     ]);
   });
 });

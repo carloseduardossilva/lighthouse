@@ -16,9 +16,6 @@ const URL = require('../lib/url-shim');
 // @see https://github.com/GoogleChrome/lighthouse/issues/3106#issuecomment-333653747
 const PRECONNECT_SOCKET_MAX_IDLE = 15;
 
-const learnMoreUrl =
-  'https://developers.google.com/web/fundamentals/performance/resource-prioritization#preconnect';
-
 class UsesRelPreconnectAudit extends Audit {
   /**
    * @return {!AuditMeta}
@@ -30,10 +27,19 @@ class UsesRelPreconnectAudit extends Audit {
       informative: true,
       helpText:
         'Consider adding preconnect or dns-prefetch resource hints to establish early ' +
-        `connections to important third-party origins. [Learn more](${learnMoreUrl}).`,
+        `connections to important third-party origins. [Learn more](https://developers.google.com/web/fundamentals/performance/resource-prioritization#preconnect).`,
       requiredArtifacts: ['devtoolsLogs'],
       scoreDisplayMode: Audit.SCORING_MODES.NUMERIC,
     };
+  }
+
+  /**
+   * Check if record has valid timing
+   * @param {!WebInspector.NetworkRequest} record
+   * @return {!boolean}
+   */
+  static hasValidTiming(record) {
+    return record.timing && record.timing.connectEnd > 0 && record.timing.connectStart > 0;
   }
 
   /**
@@ -43,7 +49,6 @@ class UsesRelPreconnectAudit extends Audit {
    */
   static hasAlreadyConnectedToOrigin(record) {
     return (
-      record.timing &&
       record.timing.dnsEnd - record.timing.dnsStart === 0 &&
       record.timing.connectEnd - record.timing.connectStart === 0
     );
@@ -75,10 +80,12 @@ class UsesRelPreconnectAudit extends Audit {
     const origins = networkRecords
       .filter(record => {
         return (
-          // filter out all resources that have the same origin
-          !URL.originsMatch(mainResource.url, record.url) &&
+          // filter out all resources where timing info was invalid
+          UsesRelPreconnectAudit.hasValidTiming(record) &&
           // filter out all resources that are loaded by the document
           record.initiatorRequest() !== mainResource &&
+          // filter out all resources that have the same origin
+          mainResource.parsedURL.securityOrigin() !== record.parsedURL.securityOrigin() &&
           // filter out urls that do not have an origin (data, ...)
           !!URL.getOrigin(record.url) &&
           // filter out all resources where origins are already resolved
@@ -113,13 +120,14 @@ class UsesRelPreconnectAudit extends Audit {
       maxWasted = Math.max(wastedMs, maxWasted);
       results.push({
         url: new URL(firstRecordOfOrigin.url).origin,
-        wastedMs: Util.formatMilliseconds(wastedMs),
+        type: 'ms',
+        wastedMs,
       });
     });
 
     const headings = [
       {key: 'url', itemType: 'url', text: 'Origin'},
-      {key: 'wastedMs', itemType: 'text', text: 'Potential Savings'},
+      {key: 'wastedMs', itemType: 'ms', text: 'Potential Savings'},
     ];
     const summary = {wastedMs: maxWasted};
     const details = Audit.makeTableDetails(headings, results, summary);
