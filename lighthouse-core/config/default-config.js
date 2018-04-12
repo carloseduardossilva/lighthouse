@@ -284,6 +284,7 @@ module.exports = {
         {id: 'time-to-first-byte', weight: 0, group: 'perf-hint'},
         {id: 'redirects', weight: 0, group: 'perf-hint'},
         {id: 'uses-rel-preload', weight: 0, group: 'perf-hint'},
+        {id: 'uses-optimized-animated-images', weight: 0, group: 'perf-hint'},
         {id: 'total-byte-weight', weight: 0, group: 'perf-info'},
         {id: 'uses-long-cache-ttl', weight: 0, group: 'perf-info'},
         {id: 'dom-size', weight: 0, group: 'perf-info'},
@@ -295,7 +296,6 @@ module.exports = {
         {id: 'screenshot-thumbnails', weight: 0},
         {id: 'mainthread-work-breakdown', weight: 0, group: 'perf-info'},
         {id: 'font-display', weight: 0, group: 'perf-info'},
-        {id: 'uses-optimized-animated-images', weight: 0, group: 'perf-info'},
       ],
     },
     'pwa': {

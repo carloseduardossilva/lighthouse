@@ -17,12 +17,14 @@ describe('Page uses videos for animated GIFs', () => {
       {
         _resourceType: WebInspector.resourceTypes.Image,
         mimeType: 'image/gif',
-        transferSize: 100240,
+        resourceSize: 100240,
+        url: 'https://example.com/example.gif',
       },
       {
         _resourceType: WebInspector.resourceTypes.Image,
         mimeType: 'image/gif',
-        transferSize: 110000,
+        resourceSize: 110000,
+        url: 'https://example.com/example2.gif',
       },
     ];
     const artifacts = {
@@ -30,10 +32,11 @@ describe('Page uses videos for animated GIFs', () => {
       requestNetworkRecords: () => Promise.resolve(networkRecords),
     };
 
-    const {score, rawValue, details} = await UsesOptimizedAnimatedImages.audit(artifacts);
-    assert.equal(score, 0);
-    assert.equal(rawValue, 0);
-    assert.equal(details.items.length, 1);
+    const {results} = await UsesOptimizedAnimatedImages.audit_(artifacts);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].url, 'https://example.com/example2.gif');
+    assert.equal(results[0].totalBytes, 110000);
+    assert.equal(Math.round(results[0].wastedBytes), 50605);
   });
 
   it(`shouldn't flag content that looks like a gif but isn't`, async () => {
@@ -41,7 +44,7 @@ describe('Page uses videos for animated GIFs', () => {
       {
         mimeType: 'image/gif',
         _resourceType: WebInspector.resourceTypes.Media,
-        transferSize: 150000,
+        resourceSize: 150000,
       },
     ];
     const artifacts = {
@@ -49,10 +52,8 @@ describe('Page uses videos for animated GIFs', () => {
       requestNetworkRecords: () => Promise.resolve(networkRecords),
     };
 
-    const {score, rawValue, details} = await UsesOptimizedAnimatedImages.audit(artifacts);
-    assert.equal(score, 1);
-    assert.equal(rawValue, 1);
-    assert.equal(details.items.length, 0);
+    const {results} = await UsesOptimizedAnimatedImages.audit_(artifacts);
+    assert.equal(results.length, 0);
   });
 
   it(`shouldn't flag non gif content`, async () => {
@@ -60,12 +61,12 @@ describe('Page uses videos for animated GIFs', () => {
       {
         _resourceType: WebInspector.resourceTypes.Document,
         mimeType: 'text/html',
-        transferSize: 150000,
+        resourceSize: 150000,
       },
       {
         _resourceType: WebInspector.resourceTypes.Stylesheet,
         mimeType: 'text/css',
-        transferSize: 150000,
+        resourceSize: 150000,
       },
     ];
     const artifacts = {
@@ -73,9 +74,7 @@ describe('Page uses videos for animated GIFs', () => {
       requestNetworkRecords: () => Promise.resolve(networkRecords),
     };
 
-    const {score, rawValue, details} = await UsesOptimizedAnimatedImages.audit(artifacts);
-    assert.equal(score, 1);
-    assert.equal(rawValue, 1);
-    assert.equal(details.items.length, 0);
+    const {results} = await UsesOptimizedAnimatedImages.audit_(artifacts);
+    assert.equal(results.length, 0);
   });
 });

@@ -8,20 +8,20 @@
  */
 'use strict';
 
-const Audit = require('../audit');
 const WebInspector = require('../../lib/web-inspector');
+const ByteEfficiencyAudit = require('./byte-efficiency-audit');
 
 // the threshold for the size of GIFs wich we flag as unoptimized
 const GIF_BYTE_THRESHOLD = 100 * 1024;
 
-class UsesOptimizedAnimatedImages extends Audit {
+class UsesOptimizedAnimatedImages extends ByteEfficiencyAudit {
   /**
    * @return {!AuditMeta}
    */
   static get meta() {
     return {
       name: 'uses-optimized-animated-images',
-      informative: true,
+      scoreDisplayMode: ByteEfficiencyAudit.SCORING_MODES.NUMERIC,
       description: 'Use a video formats for animated content',
       helpText: 'Large GIFs are inefficient for delivering animated content. Consider using ' +
         'MPEG4/WebM videos for animations and PNG/WebP for static images instead of GIF to save ' +
@@ -31,43 +31,51 @@ class UsesOptimizedAnimatedImages extends Audit {
   }
 
   /**
+   * Calculate savings percentage
+   * @param {number} bytes
+   * @see https://github.com/GoogleChrome/lighthouse/issues/4696#issuecomment-380296510} bytes
+   */
+  static getPercentSavings(bytes) {
+    return (29.1 * Math.log10(bytes) - 100.7) / 100;
+  }
+
+  /**
    * @param {!Artifacts} artifacts
    * @return {!AuditResult}
    */
-  static async audit(artifacts) {
+  static async audit_(artifacts) {
     const devtoolsLogs = artifacts.devtoolsLogs[UsesOptimizedAnimatedImages.DEFAULT_PASS];
 
     const networkRecords = await artifacts.requestNetworkRecords(devtoolsLogs);
     const unoptimizedContent = networkRecords.filter(
       record => record.mimeType === 'image/gif' &&
         record._resourceType === WebInspector.resourceTypes.Image &&
-        record.transferSize > GIF_BYTE_THRESHOLD
+        record.resourceSize > GIF_BYTE_THRESHOLD
     );
 
     const results = unoptimizedContent.map(record => {
       return {
         url: record.url,
-        transferSize: record.transferSize,
+        totalBytes: record.resourceSize,
+        wastedBytes: record.resourceSize * UsesOptimizedAnimatedImages.getPercentSavings(record.resourceSize),
       };
     });
 
     const headings = [
-      {key: 'url', itemType: 'url', text: 'Url'},
+      {key: 'url', itemType: 'url', text: 'URL'},
       {
-        key: 'transferSize',
+        key: 'totalBytes',
         itemType: 'bytes',
         displayUnit: 'kb',
         granularity: 1,
         text: 'Transfer Size',
       },
+      {key: 'wastedBytes', itemType: 'bytes', displayUnit: 'kb', granularity: 1, text: 'Byte Savings'},
     ];
-    const summary = {};
-    const details = Audit.makeTableDetails(headings, results, summary);
 
     return {
-      score: Number(results.length === 0),
-      rawValue: results.length === 0,
-      details,
+      results,
+      headings,
     };
   }
 }
