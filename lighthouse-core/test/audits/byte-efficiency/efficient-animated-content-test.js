@@ -6,8 +6,8 @@
 'use strict';
 
 /* eslint-env mocha */
-const UsesOptimizedAnimatedImages =
-  require('../../../audits/byte-efficiency/uses-optimized-animated-images');
+const EfficientAnimatedContent =
+  require('../../../audits/byte-efficiency/efficient-animated-content');
 const WebInspector = require('../../../lib/web-inspector');
 const assert = require('assert');
 
@@ -28,11 +28,11 @@ describe('Page uses videos for animated GIFs', () => {
       },
     ];
     const artifacts = {
-      devtoolsLogs: {[UsesOptimizedAnimatedImages.DEFAULT_PASS]: []},
+      devtoolsLogs: {[EfficientAnimatedContent.DEFAULT_PASS]: []},
       requestNetworkRecords: () => Promise.resolve(networkRecords),
     };
 
-    const {results} = await UsesOptimizedAnimatedImages.audit_(artifacts);
+    const {results} = await EfficientAnimatedContent.audit_(artifacts);
     assert.equal(results.length, 1);
     assert.equal(results[0].url, 'https://example.com/example2.gif');
     assert.equal(results[0].totalBytes, 110000);
@@ -48,11 +48,11 @@ describe('Page uses videos for animated GIFs', () => {
       },
     ];
     const artifacts = {
-      devtoolsLogs: {[UsesOptimizedAnimatedImages.DEFAULT_PASS]: []},
+      devtoolsLogs: {[EfficientAnimatedContent.DEFAULT_PASS]: []},
       requestNetworkRecords: () => Promise.resolve(networkRecords),
     };
 
-    const {results} = await UsesOptimizedAnimatedImages.audit_(artifacts);
+    const {results} = await EfficientAnimatedContent.audit_(artifacts);
     assert.equal(results.length, 0);
   });
 
@@ -70,11 +70,11 @@ describe('Page uses videos for animated GIFs', () => {
       },
     ];
     const artifacts = {
-      devtoolsLogs: {[UsesOptimizedAnimatedImages.DEFAULT_PASS]: []},
+      devtoolsLogs: {[EfficientAnimatedContent.DEFAULT_PASS]: []},
       requestNetworkRecords: () => Promise.resolve(networkRecords),
     };
 
-    const {results} = await UsesOptimizedAnimatedImages.audit_(artifacts);
+    const {results} = await EfficientAnimatedContent.audit_(artifacts);
     assert.equal(results.length, 0);
   });
 });

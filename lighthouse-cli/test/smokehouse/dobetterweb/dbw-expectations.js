@@ -185,7 +185,7 @@ module.exports = [
           },
         },
       },
-      'uses-optimized-animated-images': {
+      'efficient-animated-content': {
         score: 0,
         details: {
           items: [

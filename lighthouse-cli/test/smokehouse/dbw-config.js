@@ -19,7 +19,7 @@ module.exports = {
       'link-blocking-first-paint',
       'script-blocking-first-paint',
       'errors-in-console',
-      'uses-optimized-animated-images',
+      'efficient-animated-content',
     ],
   },
 };

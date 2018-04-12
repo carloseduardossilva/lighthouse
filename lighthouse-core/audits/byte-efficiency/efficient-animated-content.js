@@ -14,13 +14,13 @@ const ByteEfficiencyAudit = require('./byte-efficiency-audit');
 // the threshold for the size of GIFs wich we flag as unoptimized
 const GIF_BYTE_THRESHOLD = 100 * 1024;
 
-class UsesOptimizedAnimatedImages extends ByteEfficiencyAudit {
+class EfficientAnimatedContent extends ByteEfficiencyAudit {
   /**
    * @return {!AuditMeta}
    */
   static get meta() {
     return {
-      name: 'uses-optimized-animated-images',
+      name: 'efficient-animated-content',
       scoreDisplayMode: ByteEfficiencyAudit.SCORING_MODES.NUMERIC,
       description: 'Use a video formats for animated content',
       helpText: 'Large GIFs are inefficient for delivering animated content. Consider using ' +
@@ -44,7 +44,7 @@ class UsesOptimizedAnimatedImages extends ByteEfficiencyAudit {
    * @return {!AuditResult}
    */
   static async audit_(artifacts) {
-    const devtoolsLogs = artifacts.devtoolsLogs[UsesOptimizedAnimatedImages.DEFAULT_PASS];
+    const devtoolsLogs = artifacts.devtoolsLogs[EfficientAnimatedContent.DEFAULT_PASS];
 
     const networkRecords = await artifacts.requestNetworkRecords(devtoolsLogs);
     const unoptimizedContent = networkRecords.filter(
@@ -57,7 +57,7 @@ class UsesOptimizedAnimatedImages extends ByteEfficiencyAudit {
       return {
         url: record.url,
         totalBytes: record.resourceSize,
-        wastedBytes: record.resourceSize * UsesOptimizedAnimatedImages.getPercentSavings(record.resourceSize),
+        wastedBytes: record.resourceSize * EfficientAnimatedContent.getPercentSavings(record.resourceSize),
       };
     });
 
@@ -80,4 +80,4 @@ class UsesOptimizedAnimatedImages extends ByteEfficiencyAudit {
   }
 }
 
-module.exports = UsesOptimizedAnimatedImages;
+module.exports = EfficientAnimatedContent;
