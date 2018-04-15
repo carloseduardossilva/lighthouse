@@ -87,19 +87,19 @@ class UsesRelPreconnectAudit extends Audit {
           // filter out all resources that have the same origin
           mainResource.parsedURL.securityOrigin() !== record.parsedURL.securityOrigin() &&
           // filter out urls that do not have an origin (data, ...)
-          !!URL.getOrigin(record.url) &&
+          !!record.parsedURL.securityOrigin() &&
           // filter out all resources where origins are already resolved
           !UsesRelPreconnectAudit.hasAlreadyConnectedToOrigin(record) &&
           // make sure the requests are below the PRECONNECT_SOCKET_MAX_IDLE (15s) mark
           UsesRelPreconnectAudit.socketStartTimeIsBelowThreshold(record, mainResource)
         );
       })
-      .map(record => URL.getOrigin(record.url));
+      .map(record => record.parsedURL.securityOrigin());
 
     const preconnectOrigins = new Set(origins);
     const results = [];
     preconnectOrigins.forEach(origin => {
-      const records = networkRecords.filter(record => URL.getOrigin(record.url) === origin);
+      const records = networkRecords.filter(record => record.parsedURL.securityOrigin() === origin);
 
       // Sometimes requests are done simultaneous and the connection has not been made
       // chrome will try to connect for each network record, we get the first record
