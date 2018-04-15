@@ -97,7 +97,7 @@ class UsesRelPreconnectAudit extends Audit {
       .map(record => record.parsedURL.securityOrigin());
 
     const preconnectOrigins = new Set(origins);
-    const results = [];
+    let results = [];
     preconnectOrigins.forEach(origin => {
       const records = networkRecords.filter(record => record.parsedURL.securityOrigin() === origin);
 
@@ -124,6 +124,9 @@ class UsesRelPreconnectAudit extends Audit {
         wastedMs,
       });
     });
+
+    results = results
+      .sort((a, b) => b.wastedMs - a.wastedMs);
 
     const headings = [
       {key: 'url', itemType: 'url', text: 'Origin'},

@@ -213,8 +213,8 @@ describe('Performance: uses-rel-preconnect audit', () => {
     assert.equal(rawValue, 300);
     assert.equal(extendedInfo.value.length, 2);
     assert.deepStrictEqual(extendedInfo.value, [
-      {url: 'https://cdn.example.com', wastedMs: 200, type: 'ms'},
       {url: 'https://othercdn.example.com', wastedMs: 300, type: 'ms'},
+      {url: 'https://cdn.example.com', wastedMs: 200, type: 'ms'},
     ]);
   });
 });
