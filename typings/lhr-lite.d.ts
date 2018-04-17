@@ -75,54 +75,49 @@ declare global {
          * 'informative': the audit is an FYI only, and can't be interpreted as pass/fail. Ignore the score.
          * 'notApplicable': the audit turned out to not apply to the page. Ignore the score.
          * 'manual': The audit exists only to tell you to review something yourself. Ignore the score.
+         * 'error': There was an error while running the object (check `errorMessage` for details). Ignore the score.
          */
-        scoreDisplayMode: 'binary' | 'numeric' | 'informative' | 'notApplicable' | 'manual';
+        scoreDisplayMode: 'binary' | 'numeric' | 'informative' | 'notApplicable' | 'manual' | 'error';
+        /** An explanation of audit-related issues encountered on the test page. */
+        explanation?: string;
         /** Extra information provided by some types of audits. */
-        details?: AuditDetails;
+        details?: Audit.MetricDetails | Audit.OpportunityDetails;
         /** Error message from any exception thrown while running this audit. */
         errorMessage?: string;
       }
 
-      export type AuditDetails = AuditMetricDetails | AuditOpportunityDetails | AuditTableDetails;
+      export module Audit {
+        export interface MetricDetails {
+          type: 'metric';
+          /** The value of the metric expressed in milliseconds. */
+          timespanMs?: number;
+        }
 
-      export interface AuditMetricDetails {
-        type: 'metric';
-        /** The value of the metric expressed in milliseconds. */
-        timespanMs?: number;
-      }
+        export interface OpportunityDetails {
+          type: 'opportunity';
+          wastedMs: number
+          wastedBytes?: number
+          headings: ColumnHeading[];
+          items: (WastedBytesDetailsItem | WastedTimeDetailsItem)[];
+        }
 
-      export interface AuditOpportunityDetails {
-        type: 'opportunity';
-        wastedMs: number
-        wastedBytes?: number
-        headings: AuditColumnHeading[];
-        rows: AuditTableRow[];
-      }
+        export interface ColumnHeading {
+          key: string;
+          label: string;
+          valueType: 'url' | 'timespanMs' | 'bytes';
+        }
 
-      export interface AuditTableDetails {
-        type: 'table';
-        headings: AuditColumnHeading[];
-        rows: AuditTableRow[];
-      }
+        export interface WastedBytesDetailsItem {
+          url: string;
+          wastedBytes?: number;
+          totalBytes?: number;
+        }
 
-      export interface AuditColumnHeading {
-        key: string;
-        label: string;
-        valueType: 'url' | 'text' | 'link' | 'timespanMs';
-      }
-
-      export type AuditTableRow = WastedBytesDetailsRow | WastedTimeDetailsRow;
-
-      export interface WastedBytesDetailsRow {
-        url: string;
-        wastedBytes?: number;
-        totalBytes?: number;
-      }
-
-      export interface WastedTimeDetailsRow {
-        url: string;
-        wastedMs: number;
-        totalBytes?: number;
+        export interface WastedTimeDetailsItem {
+          url: string;
+          wastedMs: number;
+          totalBytes?: number;
+        }
       }
     }
   }
