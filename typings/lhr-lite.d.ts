@@ -95,6 +95,8 @@ declare global {
         type: 'opportunity';
         wastedMs: number
         wastedBytes?: number
+        headings: AuditColumnHeading[];
+        rows: AuditTableRow[];
       }
 
       export interface AuditTableDetails {
