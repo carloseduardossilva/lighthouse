@@ -86,24 +86,24 @@ declare global {
       export type AuditDetails = AuditMetricDetails | AuditOpportunityDetails | AuditTableDetails;
 
       export interface AuditMetricDetails {
-        type: 'opportunity';
+        type: 'metric';
         /** The value of the metric expressed in milliseconds. */
         timespanMs?: number;
       }
 
       export interface AuditOpportunityDetails {
-        type: 'metric';
+        type: 'opportunity';
         wastedMs: number
         wastedBytes?: number
       }
 
       export interface AuditTableDetails {
         type: 'table';
-        headings: AuditTableHeadings[];
+        headings: AuditColumnHeading[];
         rows: AuditTableRow[];
       }
 
-      export interface AuditTableHeadings {
+      export interface AuditColumnHeading {
         key: string;
         label: string;
         valueType: 'url' | 'text' | 'link' | 'timespanMs';
