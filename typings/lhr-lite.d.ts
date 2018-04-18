@@ -21,7 +21,7 @@ declare global {
       /** An object containing the results of the audits. */
       audits: Record<string, ResultLite.Audit>;
       /** An object containing the top-level categories, their overall scores, and reference to member audits. */
-      categories?: Record<string, ResultLite.Category>;
+      categories: Record<string, ResultLite.Category>;
       /** Descriptions of the audit groups referenced by AuditRefs. */
       categoryGroups?: Record<string, ResultLite.CategoryGroup>;
     }
