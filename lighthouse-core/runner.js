@@ -17,16 +17,15 @@ const fs = require('fs');
 const path = require('path');
 const URL = require('./lib/url-shim');
 const Sentry = require('./lib/sentry');
+const getFormattedReport = require('./lib/format-output').createOutput;
 
 const Connection = require('./gather/connections/connection.js'); // eslint-disable-line no-unused-vars
-
-/** @typedef {LH.Result & {artifacts: LH.Artifacts}} RunnerResult */
 
 class Runner {
   /**
    * @param {Connection} connection
    * @param {{config: LH.Config, url: string, initialUrl?: string, driverMock?: Driver}} opts
-   * @return {Promise<RunnerResult|undefined>}
+   * @return {Promise<LH.RunnerResult|undefined>}
    */
   static async run(connection, opts) {
     try {
@@ -118,7 +117,8 @@ class Runner {
       if (opts.config.categories) {
         reportCategories = ReportScoring.scoreAllCategories(opts.config.categories, resultsById);
       }
-      return {
+
+      const lhr = {
         userAgent: artifacts.UserAgent,
         lighthouseVersion,
         fetchedAt: artifacts.fetchedAt,
@@ -127,11 +127,13 @@ class Runner {
         url: opts.url,
         runWarnings: lighthouseRunWarnings,
         audits: resultsById,
-        artifacts,
         runtimeConfig: Runner.getRuntimeConfig(settings),
         reportCategories,
         reportGroups: opts.config.groups,
       };
+
+      const formattedReport = getFormattedReport(lhr, settings.output);
+      return {lhr, formattedReport, artifacts};
     } catch (err) {
       // @ts-ignore TODO(bckenny): Sentry type checking
       await Sentry.captureException(err, {level: 'fatal'});

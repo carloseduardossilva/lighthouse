@@ -30,7 +30,7 @@ const Config = require('./config/config');
  * @param {string} url
  * @param {LH.Flags} flags
  * @param {LH.Config.Json|undefined} configJSON
- * @return {Promise<LH.Results>}
+ * @return {Promise<LH.RunnerResult>}
  */
 function lighthouse(url, flags = {}, configJSON) {
   const startTime = Date.now();
@@ -46,10 +46,12 @@ function lighthouse(url, flags = {}, configJSON) {
     // kick off a lighthouse run
     return Runner.run(connection, {url, config})
       .then((lighthouseResults = {}) => {
+        lighthouseResults.lhr = lighthouseResults.lhr || {};
+
         // Annotate with time to run lighthouse.
         const endTime = Date.now();
-        lighthouseResults.timing = lighthouseResults.timing || {};
-        lighthouseResults.timing.total = endTime - startTime;
+        lighthouseResults.lhr.timing = lighthouseResults.lhr.timing || {};
+        lighthouseResults.lhr.timing.total = endTime - startTime;
 
         return lighthouseResults;
       });
