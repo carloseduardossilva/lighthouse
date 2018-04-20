@@ -22,8 +22,6 @@ declare global {
       audits: Record<string, ResultLite.Audit>;
       /** An object containing the top-level categories, their overall scores, and reference to member audits. */
       categories: Record<string, ResultLite.Category>;
-      /** Descriptions of the audit groups referenced by AuditRefs. */
-      categoryGroups?: Record<string, ResultLite.CategoryGroup>;
     }
 
     // ResultLite namespace
@@ -50,15 +48,6 @@ declare global {
         auditId: string;
         /** The weight of the audit's score in the overall category score. */
         weight: number;
-        /** Optional grouping within the category. Matches the key in the top-level `categoryGroups` object. */
-        groupId?: string;
-      }
-
-      export interface CategoryGroup {
-        /** The human-friendly name of the category. */
-        title: string;
-        /** A brief description of the purpose of the display group. */
-        description: string;
       }
 
       export interface Audit {
@@ -66,16 +55,16 @@ declare global {
         title: string;
         /** A more detailed description that describes why the audit is important and links to Lighthouse documentation on the audit; markdown links supported. */
         description: string;
-        /** The scored value determined by the audit, in the range `0-1`. */
-        score: number;
+        /** The scored value determined by the audit, in the range `0-1`, or null if `scoreDisplayMode` indicates not scored. */
+        score: number | null;
         /**
          * A string identifying how the score should be interpreted:
          * 'binary': pass/fail audit (0 and 1 are only possible scores).
          * 'numeric': scores of 0-1 (map to displayed scores of 0-100).
-         * 'informative': the audit is an FYI only, and can't be interpreted as pass/fail. Ignore the score.
-         * 'notApplicable': the audit turned out to not apply to the page. Ignore the score.
-         * 'manual': The audit exists only to tell you to review something yourself. Ignore the score.
-         * 'error': There was an error while running the object (check `errorMessage` for details). Ignore the score.
+         * 'informative': the audit is an FYI only, and can't be interpreted as pass/fail. Score is null and should be ignored.
+         * 'notApplicable': the audit turned out to not apply to the page. Score is null and should be ignored.
+         * 'manual': The audit exists only to tell you to review something yourself. Score is null and should be ignored.
+         * 'error': There was an error while running the object (check `errorMessage` for details). Score is null and should be ignored.
          */
         scoreDisplayMode: 'binary' | 'numeric' | 'informative' | 'notApplicable' | 'manual' | 'error';
         /** An explanation of audit-related issues encountered on the test page. */
