@@ -15,10 +15,10 @@ module.exports = {
 
       // disabled for now because their results are not meaningful/cannot be computed anymore
       'first-meaningful-paint',
-      'first-interactive',
+      'first-cpu-idle',
       'consistently-interactive',
       'estimated-input-latency',
-      'speed-index-metric',
+      'speed-index',
       'offscreen-images',
       'load-fast-enough-for-pwa',
     ],

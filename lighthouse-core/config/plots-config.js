@@ -9,9 +9,9 @@ module.exports = {
   settings: {
     onlyAudits: [
       'first-meaningful-paint',
-      'speed-index-metric',
+      'speed-index',
       'estimated-input-latency',
-      'first-interactive',
+      'first-cpu-idle',
       'consistently-interactive',
     ],
   },
