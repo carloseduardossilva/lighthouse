@@ -5,8 +5,7 @@
  */
 'use strict';
 
-const RenderBlockingResourcesAudit =
-    require('../../../audits/dobetterweb/render-blocking-resources.js');
+const RenderBlockingResourcesAudit = require('../../../audits/byte-efficiency/render-blocking-resources.js');
 
 const mobile3G = require('../../../config/constants').throttling.mobile3G;
 const Runner = require('../../../runner');
@@ -22,16 +21,19 @@ const devtoolsLog = require('../../fixtures/traces/progressive-app-m60.devtools.
 
 describe('Render blocking resources audit', () => {
   it('evaluates http2 input correctly', async () => {
-    const artifacts = Object.assign({
-      traces: {defaultPass: trace},
-      devtoolsLogs: {defaultPass: devtoolsLog},
-      TagsBlockingFirstPaint: [
-        {
-          tag: {url: 'https://pwa.rocks/script.js'},
-          transferSize: 621,
-        },
-      ],
-    }, Runner.instantiateComputedArtifacts());
+    const artifacts = Object.assign(
+      {
+        traces: {defaultPass: trace},
+        devtoolsLogs: {defaultPass: devtoolsLog},
+        TagsBlockingFirstPaint: [
+          {
+            tag: {url: 'https://pwa.rocks/script.js'},
+            transferSize: 621,
+          },
+        ],
+      },
+      Runner.instantiateComputedArtifacts()
+    );
 
     const settings = {throttlingMethod: 'simulate', throttling: mobile3G};
     const result = await RenderBlockingResourcesAudit.audit(artifacts, {settings});
@@ -42,42 +44,55 @@ describe('Render blocking resources audit', () => {
   describe('#estimateSavingsFromInlining', () => {
     const estimate = RenderBlockingResourcesAudit.estimateSavingsFromInlining;
 
-    let requestId = 1;
-    const record = props => {
-      const ret = Object.assign({parsedURL: {}, requestId: requestId++}, props);
-      Object.defineProperty(ret, 'transferSize', {
-        get() {
-          return ret._transferSize;
-        },
-      });
-      return ret;
-    };
+    let requestId;
+    let record;
 
-    it('computes savings from inling', () => {
+    beforeEach(() => {
+      requestId = 1;
+      record = props => {
+        const ret = Object.assign({parsedURL: {}, requestId: requestId++}, props);
+        Object.defineProperty(ret, 'transferSize', {
+          get() {
+            return ret._transferSize;
+          },
+        });
+        return ret;
+      };
+    });
+
+    it('computes savings from deferring', () => {
       const serverResponseTimeByOrigin = new Map([['undefined://undefined', 100]]);
       const simulator = new Simulator({rtt: 1000, serverResponseTimeByOrigin});
       const documentNode = new NetworkNode(record({_transferSize: 4000}));
       const styleNode = new NetworkNode(record({_transferSize: 3000}));
       const scriptNode = new NetworkNode(record({_transferSize: 1000}));
-      const scriptExecution = new CPUNode({dur: 50 * 1000}, []);
+      const scriptExecution = new CPUNode({tid: 1, ts: 1, dur: 50 * 1000}, []);
+      const deferredIds = new Set([2, 3]);
+      const wastedBytesMap = new Map();
 
       documentNode.addDependent(scriptNode);
       documentNode.addDependent(styleNode);
-      scriptNode.addDependent(scriptExecution);
-      const result = estimate(simulator, documentNode);
+      documentNode.addDependent(scriptExecution);
+      const result = estimate(simulator, documentNode, deferredIds, wastedBytesMap);
       // Saving 1000 + 1000 + 100ms for TCP handshake + request/response + server response time
-      assert.equal(result, 2100);
+      // -200 ms for the CPU task that becomes new bottleneck
+      assert.equal(result, 1900);
     });
 
-    it('computes savings from inlining when new RT required', () => {
+    it('computes savings from inlining', () => {
       const serverResponseTimeByOrigin = new Map([['undefined://undefined', 100]]);
       const simulator = new Simulator({rtt: 1000, serverResponseTimeByOrigin});
-      const documentNode = new NetworkNode(record({_transferSize: 10000}));
-      const styleNode = new NetworkNode(record({_transferSize: 13000})); // pushes document over 14KB
+      const documentNode = new NetworkNode(record({_transferSize: 10 * 1000}));
+      const styleNode = new NetworkNode(
+        record({_transferSize: 23 * 1000, _resourceType: WebInspector.resourceTypes.Stylesheet})
+      ); // pushes document over 14KB
+      const deferredIds = new Set([2]);
+      const wastedBytesMap = new Map([[undefined, 18 * 1000]]);
       documentNode.addDependent(styleNode);
-      const result = estimate(simulator, documentNode);
-      // Saving 1000 + 100ms for TCP handshake + server response time, response RT still required
-      assert.equal(result, 1100);
+
+      const result = estimate(simulator, documentNode, deferredIds, wastedBytesMap);
+      // Saving 1000 + 1000 + 100ms for TCP handshake + 1 RT savings + server response time
+      assert.equal(result, 2100);
     });
   });
 });

@@ -13,13 +13,14 @@
 const Audit = require('../audit');
 const Node = require('../../lib/dependency-graph/node');
 const CPUNode = require('../../lib/dependency-graph/cpu-node');
-const ByteEfficiencyAudit = require('../byte-efficiency/byte-efficiency-audit');
+const ByteEfficiencyAudit = require('./byte-efficiency-audit');
+const UnusedCSS = require('./unused-css-rules');
 
 // Because of the way we detect blocking stylesheets, asynchronously loaded
 // CSS with link[rel=preload] and an onload handler (see https://github.com/filamentgroup/loadCSS)
 // can be falsely flagged as blocking. Therefore, ignore stylesheets that loaded fast enough
 // to possibly be non-blocking (and they have minimal impact anyway).
-const MINIMUM_DOWNLOAD_TIME_IN_MS = 50;
+const MINIMUM_WASTED_MS = 50;
 
 const keyByUrl = arr => arr.reduce((map, node) => {
   map[node.record && node.record.url] = node;
@@ -33,13 +34,13 @@ class RenderBlockingResources extends Audit {
   static get meta() {
     return {
       name: 'render-blocking-resources',
-      description: 'Reduce render-blocking resources',
+      description: 'Eliminate render-blocking resources',
       informative: true,
       scoreDisplayMode: Audit.SCORING_MODES.NUMERIC,
       helpText: 'Resources are blocking the first paint of your page. Consider ' +
           'delivering critical JS/CSS inline and deferring all non-critical ' +
           'JS/styles. [Learn more](https://developers.google.com/web/tools/lighthouse/audits/blocking-resources).',
-      requiredArtifacts: ['TagsBlockingFirstPaint', 'traces'],
+      requiredArtifacts: ['CSSUsage', 'URL', 'TagsBlockingFirstPaint', 'traces'],
     };
   }
 
@@ -53,29 +54,39 @@ class RenderBlockingResources extends Audit {
     const simulatorData = {devtoolsLog, settings: context.settings};
     const traceOfTab = await artifacts.requestTraceOfTab(trace);
     const simulator = await artifacts.requestLoadSimulator(simulatorData);
+    const wastedBytesMap = await RenderBlockingResources.computeWastedCSSBytes(artifacts, context);
 
     const metricSettings = {throttlingMethod: 'simulate'};
     const metricComputationData = {trace, devtoolsLog, simulator, settings: metricSettings};
     const fcpSimulation = await artifacts.requestFirstContentfulPaint(metricComputationData);
     const fcpTsInMs = traceOfTab.timestamps.firstContentfulPaint / 1000;
 
-    const nodeTimingMap = fcpSimulation.pessimisticEstimate.nodeTiming;
+    const nodeTimingMap = fcpSimulation.optimisticEstimate.nodeTiming;
     const nodesByUrl = keyByUrl(Array.from(nodeTimingMap.keys()));
 
     const results = [];
+    const deferredNodeIds = new Set();
     for (const resource of artifacts.TagsBlockingFirstPaint) {
+      // Ignore any resources that finished after observed FCP (they're clearly not render-blocking)
       if (resource.endTime * 1000 > fcpTsInMs) continue;
-      if ((resource.endTime - resource.startTime) * 1000 < MINIMUM_DOWNLOAD_TIME_IN_MS) continue;
 
       const node = nodesByUrl[resource.tag.url];
+      const nodeTiming = nodeTimingMap.get(node);
       // TODO(phulce): beacon these occurences to Sentry to improve FCP graph
       if (!node) continue;
 
-      const nodeTiming = nodeTimingMap.get(node);
+      // Mark this node and all it's dependents as deferrable
+      // TODO(phulce): make this slightly more surgical
+      // i.e. the referenced font asset won't become inlined just because you inline the CSS
+      node.traverse(node => deferredNodeIds.add(node.id));
+
+      const wastedMs = nodeTiming.endTime - nodeTiming.startTime;
+      if (wastedMs < MINIMUM_WASTED_MS) continue;
+
       results.push({
         url: resource.tag.url,
         totalBytes: resource.transferSize,
-        wastedMs: nodeTiming.endTime - nodeTiming.startTime,
+        wastedMs,
       });
     }
 
@@ -85,50 +96,40 @@ class RenderBlockingResources extends Audit {
 
     const wastedMs = RenderBlockingResources.estimateSavingsFromInlining(
       simulator,
-      fcpSimulation.pessimisticGraph,
-      fcpSimulation.pessimisticEstimate.timeInMs
+      fcpSimulation.optimisticGraph,
+      deferredNodeIds,
+      wastedBytesMap
     );
+
     return {results, wastedMs};
   }
 
   /**
    * @param {Simulator} simulator
    * @param {Node} fcpGraph
+   * @param {Set<string>} deferredIds
+   * @param {Map<string, number>} wastedBytesMap
    * @return {number}
    */
-  static estimateSavingsFromInlining(simulator, fcpGraph) {
+  static estimateSavingsFromInlining(simulator, fcpGraph, deferredIds, wastedBytesMap) {
     const originalEstimate = simulator.simulate(fcpGraph).timeInMs;
 
-    let earliestCpuTs = Infinity;
-    let totalChildCpuTime = 0;
     let totalChildNetworkBytes = 0;
     const graphWithoutChildren = fcpGraph.cloneWithRelationships(node => {
-      // Node is root node, this is the only one we're keeping
-      if (node === fcpGraph) return true;
-
-      // Node is network node, we're dropping and pretending we're inlining
-      if (node.type === Node.TYPES.NETWORK) {
-        totalChildNetworkBytes += node.record.transferSize;
-        return false;
+      const willDefer = deferredIds.has(node.id);
+      if (willDefer && node.type === Node.TYPES.NETWORK &&
+          node.record._resourceType === WebInspector.resourceTypes.Stylesheet) {
+        const wastedBytes = wastedBytesMap.get(node.record.url) || 0;
+        totalChildNetworkBytes += node.record._transferSize - wastedBytes;
       }
 
-      // Node is CPU node we're dropping and merging into one mega CPU task
-      if (node.type === Node.TYPES.CPU) {
-        earliestCpuTs = node.event.ts;
-        totalChildCpuTime += node.event.dur;
-        return false;
-      }
+      // Include all nodes that couldn't be deferred
+      return !willDefer;
     });
 
-    if (totalChildCpuTime) {
-      const fakeChildEvents = [];
-      const fakeEvent = {pid: 1, tid: 1, ts: earliestCpuTs, dur: totalChildCpuTime};
-      const fakeCpuNode = new CPUNode(fakeEvent, fakeChildEvents);
-      graphWithoutChildren.addDependent(fakeCpuNode);
-    }
-
     graphWithoutChildren.record._transferSize += totalChildNetworkBytes;
-    const estimateAfterInline = simulator.simulate(graphWithoutChildren).timeInMs;
+    const estimateAfterInlineA = simulator.simulate(graphWithoutChildren);
+    const estimateAfterInline = estimateAfterInlineA.timeInMs;
     graphWithoutChildren.record._transferSize -= totalChildNetworkBytes;
     return Math.max(originalEstimate - estimateAfterInline, 0);
   }
@@ -136,7 +137,24 @@ class RenderBlockingResources extends Audit {
   /**
    * @param {!Artifacts} artifacts
    * @param {LH.Audit.Context} context
-   * @return {!AuditResult}
+   * @return {Map<string, number>}
+   */
+  static async computeWastedCSSBytes(artifacts, context) {
+    const wastedBytesByUrl = new Map();
+    try {
+      const results = await UnusedCSS.audit(artifacts, context);
+      for (const item of results.details.items) {
+        wastedBytesByUrl.set(item.url, item.wastedBytes);
+      }
+    } catch (_) {}
+
+    return wastedBytesByUrl;
+  }
+
+  /**
+   * @param {!Artifacts} artifacts
+   * @param {LH.Audit.Context} context
+   * @return {AuditResult}
    */
   static async audit(artifacts, context) {
     const {results, wastedMs} = await RenderBlockingResources.computeResults(artifacts, context);
