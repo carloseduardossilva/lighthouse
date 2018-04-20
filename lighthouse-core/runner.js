@@ -17,6 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const URL = require('./lib/url-shim');
 const Sentry = require('./lib/sentry');
+const formatReport = require('./report/v2/report-formatter').formatReport;
 
 const Connection = require('./gather/connections/connection.js'); // eslint-disable-line no-unused-vars
 
@@ -28,6 +29,7 @@ class Runner {
    */
   static async run(connection, opts) {
     try {
+      const startTime = Date.now();
       const settings = opts.config.settings;
 
       /**
@@ -129,9 +131,11 @@ class Runner {
         runtimeConfig: Runner.getRuntimeConfig(settings),
         reportCategories,
         reportGroups: opts.config.groups,
+        timing: {total: Date.now() - startTime},
       };
 
-      return {lhr, artifacts, formattedReport: ''};
+      const formattedReport = formatReport(lhr, settings.output);
+      return {lhr, artifacts, formattedReport};
     } catch (err) {
       // @ts-ignore TODO(bckenny): Sentry type checking
       await Sentry.captureException(err, {level: 'fatal'});

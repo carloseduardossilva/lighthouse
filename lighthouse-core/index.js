@@ -9,7 +9,6 @@
 const Runner = require('./runner');
 const log = require('lighthouse-logger');
 const ChromeProtocol = require('./gather/connections/cri.js');
-const formatReport = require('./report/v2/report-formatter').formatReport;
 const Config = require('./config/config');
 
 /*
@@ -34,7 +33,6 @@ const Config = require('./config/config');
  * @return {Promise<LH.RunnerResult>}
  */
 function lighthouse(url, flags = {}, configJSON) {
-  const startTime = Date.now();
   return Promise.resolve().then(_ => {
     // set logging preferences, assume quiet
     flags.logLevel = flags.logLevel || 'error';
@@ -45,18 +43,7 @@ function lighthouse(url, flags = {}, configJSON) {
     const connection = new ChromeProtocol(flags.port, flags.hostname);
 
     // kick off a lighthouse run
-    return Runner.run(connection, {url, config})
-      .then((runnerResult = {}) => {
-        runnerResult.lhr = runnerResult.lhr || {};
-
-        // Annotate with time to run lighthouse.
-        const endTime = Date.now();
-        runnerResult.lhr.timing = runnerResult.lhr.timing || {};
-        runnerResult.lhr.timing.total = endTime - startTime;
-
-        runnerResult.formattedReport = formatReport(runnerResult.lhr, config.settings.output);
-        return runnerResult;
-      });
+    return Runner.run(connection, {url, config});
   });
 }
 
