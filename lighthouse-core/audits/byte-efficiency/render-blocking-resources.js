@@ -12,9 +12,9 @@
 
 const Audit = require('../audit');
 const Node = require('../../lib/dependency-graph/node');
-const CPUNode = require('../../lib/dependency-graph/cpu-node');
 const ByteEfficiencyAudit = require('./byte-efficiency-audit');
 const UnusedCSS = require('./unused-css-rules');
+const WebInspector = require('../../lib/web-inspector');
 
 // Because of the way we detect blocking stylesheets, asynchronously loaded
 // CSS with link[rel=preload] and an onload handler (see https://github.com/filamentgroup/loadCSS)

@@ -5,13 +5,14 @@
  */
 'use strict';
 
-const RenderBlockingResourcesAudit = require('../../../audits/byte-efficiency/render-blocking-resources.js');
+const RenderBlockingResourcesAudit = require('../../../audits/byte-efficiency/render-blocking-resources.js'); // eslint-disable-line max-len
 
 const mobile3G = require('../../../config/constants').throttling.mobile3G;
 const Runner = require('../../../runner');
 const NetworkNode = require('../../../lib/dependency-graph/network-node');
 const CPUNode = require('../../../lib/dependency-graph/cpu-node');
 const Simulator = require('../../../lib/dependency-graph/simulator/simulator');
+const WebInspector = require('../../../lib/web-inspector');
 const assert = require('assert');
 
 const trace = require('../../fixtures/traces/progressive-app-m60.json');
