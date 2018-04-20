@@ -9,6 +9,7 @@
 const Runner = require('./runner');
 const log = require('lighthouse-logger');
 const ChromeProtocol = require('./gather/connections/cri.js');
+const formatReport = require('./report/v2/report-formatter').formatReport;
 const Config = require('./config/config');
 
 /*
@@ -53,6 +54,7 @@ function lighthouse(url, flags = {}, configJSON) {
         runnerResult.lhr.timing = runnerResult.lhr.timing || {};
         runnerResult.lhr.timing.total = endTime - startTime;
 
+        runnerResult.formattedReport = formatReport(runnerResult.lhr, config.settings.output);
         return runnerResult;
       });
   });
