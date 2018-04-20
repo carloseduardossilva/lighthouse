@@ -45,7 +45,6 @@ class ReportGeneratorV2 {
     return REPORT_TEMPLATES;
   }
 
-
   /**
    * Replaces all the specified strings in source without serial replacements.
    * @param {string} source
@@ -60,19 +59,18 @@ class ReportGeneratorV2 {
     const firstReplacement = replacements[0];
     const nextReplacements = replacements.slice(1);
     return source
-        .split(firstReplacement.search)
-        .map(part => ReportGeneratorV2.replaceStrings(part, nextReplacements))
-        .join(firstReplacement.replacement);
+      .split(firstReplacement.search)
+      .map(part => ReportGeneratorV2.replaceStrings(part, nextReplacements))
+      .join(firstReplacement.replacement);
   }
-
 
   /**
    * Returns the report HTML as a string with the report JSON and renderer JS inlined.
-   * @param {!Object} reportAsJson
+   * @param {LH.Result} lhr
    * @return {string}
    */
-  generateReportHtml(reportAsJson) {
-    const sanitizedJson = JSON.stringify(reportAsJson)
+  static generateReportHtml(lhr) {
+    const sanitizedJson = JSON.stringify(lhr)
       .replace(/</g, '\\u003c') // replaces opening script tags
       .replace(/\u2028/g, '\\u2028') // replaces line separators ()
       .replace(/\u2029/g, '\\u2029'); // replaces paragraph separators
@@ -84,6 +82,42 @@ class ReportGeneratorV2 {
       {search: '/*%%LIGHTHOUSE_CSS%%*/', replacement: REPORT_CSS},
       {search: '%%LIGHTHOUSE_TEMPLATES%%', replacement: REPORT_TEMPLATES},
     ]);
+  }
+
+  /**
+   * Converts the results to a CSV formatted string
+   * Each row describes the result of 1 audit with
+   *  - the name of the category the audit belongs to
+   *  - the name of the audit
+   *  - a description of the audit
+   *  - the score type that is used for the audit
+   *  - the score value of the audit
+   *
+   * @param {LH.Result} lhr
+   * @returns {string}
+   */
+  static generateReportCSV(lhr) {
+    // To keep things "official" we follow the CSV specification (RFC4180)
+    // The document describes how to deal with escaping commas and quotes etc.
+    const CRLF = '\r\n';
+    const separator = ',';
+    /** @param {string} value @returns {string} */
+    const escape = value => `"${value.replace(/"/g, '""')}"`;
+
+    // Possible TODO: tightly couple headers and row values
+    const header = ['category', 'name', 'title', 'type', 'score'];
+    const table = lhr.reportCategories.map(category => {
+      return category.audits.map(catAudit => {
+        const audit = lhr.audits[catAudit.id];
+        return [category.name, audit.name, audit.description, audit.scoreDisplayMode, audit.score]
+          .map(value => value.toString())
+          .map(escape);
+      });
+    });
+
+    // @ts-ignore TS loses track of type Array
+    const flattedTable = [].concat(...table);
+    return [header, ...flattedTable].map(row => row.join(separator)).join(CRLF);
   }
 }
 

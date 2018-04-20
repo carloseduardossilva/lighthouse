@@ -123,6 +123,11 @@ gulp.task('browserify-lighthouse', () => {
       .ignore('rimraf')
       .ignore('pako/lib/zlib/inflate.js');
 
+      // Prevent the DevTools/LR background script from getting the HTML report generator.
+      if (/lighthouse-background/.test(file.path)) {
+        bundle.ignore(require.resolve('../lighthouse-core/report/v2/report-generator.js'));
+      }
+
       // Expose the audits, gatherers, and computed artifacts so they can be dynamically loaded.
       const corePath = '../lighthouse-core/';
       const driverPath = `${corePath}gather/`;

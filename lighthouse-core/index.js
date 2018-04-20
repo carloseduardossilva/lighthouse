@@ -45,15 +45,15 @@ function lighthouse(url, flags = {}, configJSON) {
 
     // kick off a lighthouse run
     return Runner.run(connection, {url, config})
-      .then((lighthouseResults = {}) => {
-        lighthouseResults.lhr = lighthouseResults.lhr || {};
+      .then((runnerResult = {}) => {
+        runnerResult.lhr = runnerResult.lhr || {};
 
         // Annotate with time to run lighthouse.
         const endTime = Date.now();
-        lighthouseResults.lhr.timing = lighthouseResults.lhr.timing || {};
-        lighthouseResults.lhr.timing.total = endTime - startTime;
+        runnerResult.lhr.timing = runnerResult.lhr.timing || {};
+        runnerResult.lhr.timing.total = endTime - startTime;
 
-        return lighthouseResults;
+        return runnerResult;
       });
   });
 }

@@ -17,7 +17,7 @@ const fs = require('fs');
 const path = require('path');
 const URL = require('./lib/url-shim');
 const Sentry = require('./lib/sentry');
-const getFormattedReport = require('./lib/format-output').createOutput;
+const formatReport = require('./report/v2/report-formatter').formatReport;
 
 const Connection = require('./gather/connections/connection.js'); // eslint-disable-line no-unused-vars
 
@@ -132,7 +132,7 @@ class Runner {
         reportGroups: opts.config.groups,
       };
 
-      const formattedReport = getFormattedReport(lhr, settings.output);
+      const formattedReport = formatReport(lhr, settings.output);
       return {lhr, formattedReport, artifacts};
     } catch (err) {
       // @ts-ignore TODO(bckenny): Sentry type checking
