@@ -382,95 +382,101 @@
 <!-- Lighthouse score gauge -->
 <template id="tmpl-lh-gauge">
   <style>
-    .lh-gauge {
+    .lh-gauge__wrapper {
       --circle-size: calc(2.5 * var(--header-font-size));
       --circle-size-half: calc(var(--circle-size) / 2);
-      --circle-background: #ccc;
-      --circle-border-width: 4px;
+      --circle-background: hsl(216, 12%, 92%);
+      --circle-border-width: 9;
       --inset-size: calc(var(--circle-size) - 2 * var(--circle-border-width));
-      --inset-color: #fff;
       --transition-length: 1s;
-      width: var(--circle-size);
-      height: var(--circle-size);
-      background-color: var(--circle-background);
-      border-radius: 50%;
     }
-    .lh-gauge--pass {
+
+    .lh-gauge__wrapper--pass,
+    .lh-gauge__wrapper--pass .lh-gauge {
       --circle-color: var(--pass-color);
       color: var(--circle-color);
     }
-    .lh-gauge--average {
+
+    .lh-gauge__wrapper--average,
+    .lh-gauge__wrapper--average .lh-gauge {
       --circle-color: var(--average-color);
       color: var(--circle-color);
     }
-    .lh-gauge--fail {
+
+    .lh-gauge__wrapper--fail,
+    .lh-gauge__wrapper--fail .lh-gauge {
       --circle-color: var(--fail-color);
       color: var(--circle-color);
     }
-    .lh-gauge__mask,
-    .lh-gauge__fill {
-      width: var(--circle-size);
-      height: var(--circle-size);
-      position: absolute;
-      transition: transform var(--transition-length);
-      border-radius: 50%;
+
+    .lh-gauge {
+        text-anchor: middle;
+        max-width: 360px;
+        max-height: 360px;
+        stroke-linecap: round;
+        width: var(--circle-size);
+        height: var(--circle-size);
     }
-    .lh-gauge__mask {
-      clip: rect(0px, var(--circle-size), var(--circle-size), var(--circle-size-half));
+
+    .lh-gauge-base {
+        fill: none;
+        stroke: var(--circle-background);
+        stroke-width: var(--circle-border-width);
     }
-    .lh-gauge__mask .lh-gauge__fill {
-      clip: rect(0px, var(--circle-size-half), var(--circle-size), 0px);
-      background-color: var(--circle-color);
-      backface-visibility: hidden;
+    .lh-gauge-arc {
+        fill: none;
+        stroke: var(--circle-color);
+        stroke-width: var(--circle-border-width);
+        animation: load-gauge var(--transition-length) ease forwards;
+        animation-delay: 250ms;
     }
+
+    @keyframes load-gauge {
+      from { stroke-dasharray: 0 360; }
+    }
+
     .lh-gauge__percentage {
       --spacer: calc((var(--circle-size) - var(--inset-size)) / 2);
       width: var(--inset-size);
       height: var(--inset-size);
       position: absolute;
-      margin-left: var(--spacer);
-      margin-top: var(--spacer);
-      background-color: var(--inset-color);
       border-radius: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-size: var(--header-font-size);
+      text-align: center;
+      top: calc(var(--circle-size) / 3);
     }
+
     .lh-gauge__wrapper {
       display: inline-flex;
       align-items: center;
       flex-direction: column;
       text-decoration: none;
-      color: inherit;
       flex: 1;
       min-width: auto;
       position: relative;
+
+      /* Contain the layout style paint & layers during animation*/
+      contain: content;
+      will-change: opacity;
     }
-    .lh-scores-header .lh-gauge__wrapper {
-      width: calc(10.5 * var(--body-font-size));
-    }
+
     .lh-gauge__label {
       font-size: var(--body-font-size);
       line-height: var(--body-line-height);
       margin-top: calc(0.5 * var(--body-line-height));
       text-align: center;
+      color: black;
     }
+
   </style>
   <a href="#" class="lh-gauge__wrapper">
-    <div class="lh-gauge" data-progress="0">
-      <div class="lh-gauge__circle">
-        <div class="lh-gauge__mask lh-gauge__mask--full">
-          <div class="lh-gauge__fill"></div>
-        </div>
-        <div class="lh-gauge__mask lh-gauge__mask--half">
-          <div class="lh-gauge__fill"></div>
-          <div class="lh-gauge__fill lh-gauge__fill--fix"></div>
-        </div>
-      </div>
-      <div class="lh-gauge__percentage"></div>
-    </div>
-    <div class="lh-gauge__label"><!-- fill me --></div>
+    <svg viewBox="0 0 120 120" class="lh-gauge" fill="none" stroke-width="2">
+      <circle class="lh-gauge-base" r="53" cx="60" cy="60"></circle>
+      <circle class="lh-gauge-arc" transform="rotate(-90 60 60)" stroke-dasharray="0 360" stroke-dashoffset="0" r="53" cx="60" cy="60"></circle>
+      <!-- <text x="60" y="80" dx="0" dy="0.33em" class="lh-gauge__percentage">5</text> -->
+    </svg>
+    <div class="lh-gauge__percentage"></div>
+    <div class="lh-gauge__label"></div>
   </a>
 </template>
 
