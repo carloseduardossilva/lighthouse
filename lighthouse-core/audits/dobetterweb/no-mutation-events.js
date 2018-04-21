@@ -40,7 +40,7 @@ class NoMutationEventsAudit extends Audit {
       failureDescription: 'Uses Mutation Events in its own scripts',
       helpText: 'Mutation Events are deprecated and harm performance. Consider using Mutation ' +
           'Observers instead. [Learn more](https://developers.google.com/web/tools/lighthouse/audits/mutation-events).',
-      requiredArtifacts: ['URL', 'EventListeners'],
+      requiredArtifacts: ['URL', 'AllEventListeners'],
     };
   }
 
@@ -50,7 +50,7 @@ class NoMutationEventsAudit extends Audit {
    */
   static audit(artifacts) {
     let debugString;
-    const listeners = artifacts.EventListeners;
+    const listeners = artifacts.AllEventListeners;
 
     const results = listeners.filter(loc => {
       const isMutationEvent = this.MUTATION_EVENTS.includes(loc.type);

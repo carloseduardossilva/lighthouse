@@ -14,7 +14,7 @@ const Gatherer = require('../gatherer');
 const Driver = require('../../driver.js'); // eslint-disable-line no-unused-vars
 const Element = require('../../../lib/element.js'); // eslint-disable-line no-unused-vars
 
-class EventListeners extends Gatherer {
+class AllEventListeners extends Gatherer {
   /**
    * @param {Driver} driver
    */
@@ -79,11 +79,11 @@ class EventListeners extends Gatherer {
    * @param {Driver} driver
    * @param {Map<string, LH.Crdp.Debugger.ScriptParsedEvent>} parsedScripts
    * @param {string|number} nodeId The node to look for attached event listeners.
-   * @return {Promise<LH.Artifacts['EventListeners']>} List of event listeners attached to
+   * @return {Promise<LH.Artifacts['AllEventListeners']>} List of event listeners attached to
    *     the node.
    */
   getEventListeners(driver, parsedScripts, nodeId) {
-    /** @type {LH.Artifacts['EventListeners']} */
+    /** @type {LH.Artifacts['AllEventListeners']} */
     const matchedListeners = [];
 
     return this._listEventListeners(driver, nodeId).then(results => {
@@ -117,7 +117,7 @@ class EventListeners extends Gatherer {
    * @param {Driver} driver
    * @param {Map<string, LH.Crdp.Debugger.ScriptParsedEvent>} parsedScripts
    * @param {Array<string|number>} nodeIds List of objects or nodeIds to fetch event listeners for.
-   * @return {Promise<LH.Artifacts['EventListeners']>} Resolves to a list of all the event
+   * @return {Promise<LH.Artifacts['AllEventListeners']>} Resolves to a list of all the event
    *     listeners found across the elements.
    */
   collectListeners(driver, parsedScripts, nodeIds) {
@@ -128,7 +128,7 @@ class EventListeners extends Gatherer {
 
   /**
    * @param {LH.Gatherer.PassContext} passContext
-   * @return {Promise<LH.Artifacts['EventListeners']>}
+   * @return {Promise<LH.Artifacts['AllEventListeners']>}
    */
   async afterPass(passContext) {
     const driver = passContext.driver;
@@ -144,4 +144,4 @@ class EventListeners extends Gatherer {
   }
 }
 
-module.exports = EventListeners;
+module.exports = AllEventListeners;

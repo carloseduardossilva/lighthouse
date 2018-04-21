@@ -17,7 +17,7 @@ const URL = 'https://example.com';
 describe('Page does not use mutation events', () => {
   it('passes when mutation events are not used', () => {
     const auditResult = NoMutationEventsAudit.audit({
-      EventListeners: [],
+      AllEventListeners: [],
       URL: {finalUrl: URL},
     });
     assert.equal(auditResult.rawValue, true);
@@ -26,7 +26,7 @@ describe('Page does not use mutation events', () => {
 
   it('fails when mutation events are used on the origin', () => {
     const auditResult = NoMutationEventsAudit.audit({
-      EventListeners: fixtureData,
+      AllEventListeners: fixtureData,
       URL: {finalUrl: URL},
     });
     assert.equal(auditResult.rawValue, false);
@@ -40,7 +40,7 @@ describe('Page does not use mutation events', () => {
 
   it('fails when listener is missing a url property', () => {
     const auditResult = NoMutationEventsAudit.audit({
-      EventListeners: fixtureData,
+      AllEventListeners: fixtureData,
       URL: {finalUrl: URL},
     });
     assert.equal(auditResult.rawValue, false);
@@ -50,7 +50,7 @@ describe('Page does not use mutation events', () => {
 
   it('fails when listener has a bad url property', () => {
     const auditResult = NoMutationEventsAudit.audit({
-      EventListeners: [
+      AllEventListeners: [
         {
           objectName: 'Window',
           type: 'DOMNodeInserted',
