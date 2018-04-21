@@ -376,8 +376,7 @@ span.lh-node:hover {
   display: flex;
   justify-content: space-between;
 
-  margin-bottom: calc(2 * var(--lh-audit-vpadding));
-  padding-top: var(--lh-audit-vpadding);
+  padding: calc(2 * var(--lh-audit-vpadding)) 0;
   border-top: 1px solid var(--report-secondary-border-color);
 }
 
@@ -400,15 +399,9 @@ span.lh-node:hover {
 }
 
 .lh-perf-metric__description {
-  opacity: 0;
-  transition: opacity 500ms;
   color: var(--secondary-text-color);
-  position: absolute;
 }
 
-.lh-perf-metric:hover .lh-perf-metric__description {
-  opacity: 1;
-}
 
 .lh-perf-metric--pass .lh-perf-metric__value {
   color: var(--pass-color);
@@ -927,5 +920,49 @@ summary.lh-passed-audits-summary {
   width: var(--image-preview-size);
   object-fit: contain;
 }
+
+
+/* Tooltip */
+.tooltip-boundary {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  display: none; /* Don't retain these layers when not needed */
+  opacity: 0;
+}
+
+.tooltip-boundary:hover .tooltip {
+  display: block;
+  animation: fadeInTooltip 250ms;
+  animation-fill-mode: forwards;
+  animation-delay: 300ms;
+  min-width: 15em;
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 5px;
+  bottom: 100%;
+  z-index: 1;
+  will-change: opacity;
+}
+
+.tooltip::before {
+  content: "";
+  border: solid transparent;
+  border-bottom-color: #fff;
+  border-width: 10px;
+  position: absolute;
+  bottom: -20px;
+  transform: rotate(180deg);
+  pointer-events: none;
+}
+
+@keyframes fadeInTooltip {
+  0% { opacity: 0; }
+  75% { opacity: 1; }
+  100% { opacity: 1;  filter: drop-shadow(1px 0px 1px #aaa) drop-shadow(0px 2px 4px hsla(206, 6%, 25%, 0.15)); }
+}
+
 
 /*# sourceURL=report.styles.css */
