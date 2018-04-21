@@ -583,7 +583,7 @@ span.lh-node:hover {
 }
 
 /* correlate metric end location with sparkline */
-.lh-timeline-metric:hover .lh-sparkline__bar::after {
+.lh-perf-metric:hover .lh-sparkline__bar::after {
   content: '';
   height: 100vh;
   width: 2px;
