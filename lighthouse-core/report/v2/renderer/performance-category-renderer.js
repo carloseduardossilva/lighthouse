@@ -121,18 +121,6 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
       metricAuditsEl.appendChild(this._renderMetric(item));
     });
 
-    const omg = UI.Fragment.build`
-    <div flex=none margin=12px>
-      <div x-center justify-content=center margin-top=10px>
-        ${'ok'}
-        <span $=time margin=8px>EHHHHHHHHELLLLLLLLLOOOOOO</span>
-        ${'ok'}
-      </div>
-    </div>
-  `;
-  console.log({omg});
-  element.appendChild(omg.element());
-
     // Filmstrip
     const timelineEl = this.dom.createChildOf(metricAuditsEl, 'div', 'lh-timeline');
     const thumbnailAudit = category.audits.find(audit => audit.id === 'screenshot-thumbnails');
