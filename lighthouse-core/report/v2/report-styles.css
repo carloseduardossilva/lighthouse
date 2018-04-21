@@ -362,78 +362,80 @@ span.lh-node:hover {
 
 /* Perf Timeline Metric */
 
-.lh-timeline-metric {
+.lh-perf-metric {
   position: relative;
+  display: flex;
+  justify-content: space-between;
+
   margin-bottom: calc(2 * var(--lh-audit-vpadding));
   padding-top: var(--lh-audit-vpadding);
   border-top: 1px solid var(--report-secondary-border-color);
 }
 
-.lh-timeline-metric__header {
+.lh-perf-metric__header {
   display: flex;
 }
 
-.lh-timeline-metric__details {
+.lh-perf-metric__details {
   order: -1;
 }
 
-.lh-timeline-metric__title {
+.lh-perf-metric__title {
   font-size: var(--body-font-size);
   line-height: var(--body-line-height);
   display: flex;
 }
 
-.lh-timeline-metric__name {
+.lh-perf-metric__name {
   flex: 1;
 }
 
-.lh-timeline-metric__description {
+.lh-perf-metric__description {
+  opacity: 0;
+  transition: opacity 500ms;
   color: var(--secondary-text-color);
+  position: absolute;
 }
 
-.lh-timeline-metric__value {
-  width: var(--lh-audit-score-width);
-  text-align: right;
+.lh-perf-metric:hover .lh-perf-metric__description {
+  opacity: 1;
 }
 
-.lh-timeline-metric--pass .lh-timeline-metric__value {
+.lh-perf-metric--pass .lh-perf-metric__value {
   color: var(--pass-color);
 }
 
-.lh-timeline-metric--average .lh-timeline-metric__value {
+.lh-perf-metric .lh-perf-metric__value span::after {
+  content: '';
+  width: var(--body-font-size);
+  height: var(--body-font-size);
+  background-size: contain;
+  display: inline-block;
+  vertical-align: text-bottom;
+  margin-left: calc(var(--body-font-size) / 2);
+}
+
+.lh-perf-metric--pass .lh-perf-metric__value span::after {
+  background: url('data:image/svg+xml;utf8,<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2"><circle class="path circle" fill="#73AF55" cx="65.1" cy="65.1" r="62.1"/><polyline class="path check" fill="none" stroke="white" stroke-width="16" stroke-linecap="round" stroke-miterlimit="10" points="100.2,40.2 51.5,88.8 29.8,67.5 "/></svg>') no-repeat 50% 50%;
+}
+
+
+.lh-perf-metric--average .lh-perf-metric__value {
   color: var(--average-color);
 }
+.lh-perf-metric--average .lh-perf-metric__value span::after {
+  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>info</title><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="hsl(31, 100%, 45%)"/></svg>') no-repeat 50% 50%;
+}
 
-.lh-timeline-metric--fail .lh-timeline-metric__value {
+
+.lh-perf-metric--fail .lh-perf-metric__value {
   color: var(--fail-color);
 }
-
-.lh-timeline-metric__sparkline {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -1px;
-  height: 3px;
-  width: 100%;
+.lh-perf-metric--fail .lh-perf-metric__value span::after {
+  background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>warn</title><path d="M0 0h24v24H0z" fill="none"/><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="hsl(1, 73%, 45%)"/></svg>') no-repeat 50% 50%;
 }
 
-.lh-timeline-metric__sparkline .lh-sparkline__bar {
-  float: none;
-}
-
-.lh-timeline-metric--pass .lh-sparkline__bar {
-  background: var(--pass-color);
-}
-
-.lh-timeline-metric--average .lh-sparkline__bar {
-  background: var(--average-color);
-}
-
-.lh-timeline-metric--fail .lh-sparkline__bar {
-  background: var(--fail-color);
-}
-
-.lh-timeline-metric .lh-debug {
+.lh-perf-metric .lh-debug {
   margin-left: var(--expandable-indent);
 }
 
