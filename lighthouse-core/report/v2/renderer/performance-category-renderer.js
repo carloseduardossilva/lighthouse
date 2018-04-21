@@ -117,8 +117,18 @@ class PerformanceCategoryRenderer extends CategoryRenderer {
     const metricAuditsEl = this.renderAuditGroup(groups['perf-metric'], {expandable: false});
 
     // Metrics
-    metricAudits.forEach(item => {
-      metricAuditsEl.appendChild(this._renderMetric(item));
+    const keyMetrics = metricAudits.filter(a => a.weight >= 3);
+    const otherMetrics = metricAudits.filter(a => a.weight < 3);
+
+    const metricsBoxesEl = this.dom.createChildOf(metricAuditsEl, 'div', 'lh-metrics-container');
+    const keyBox = this.dom.createChildOf(metricsBoxesEl, 'div', 'lh-metrics lh-metrics__key');
+    const otherBox = this.dom.createChildOf(metricsBoxesEl, 'div', 'lh-metrics lh-metrics__other');
+
+    keyMetrics.forEach(item => {
+      keyBox.appendChild(this._renderMetric(item));
+    });
+    otherMetrics.forEach(item => {
+      otherBox.appendChild(this._renderMetric(item));
     });
 
     // Filmstrip

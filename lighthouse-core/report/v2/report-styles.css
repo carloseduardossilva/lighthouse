@@ -362,6 +362,15 @@ span.lh-node:hover {
 
 /* Perf Timeline Metric */
 
+.lh-metrics-container {
+  display: flex;
+}
+
+.lh-metrics {
+  flex: 1;
+  margin-right: 20px;
+}
+
 .lh-perf-metric {
   position: relative;
   display: flex;
