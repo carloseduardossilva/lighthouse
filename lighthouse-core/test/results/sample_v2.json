@@ -1086,6 +1086,27 @@
         }
       }
     },
+    "uses-rel-preconnect": {
+      "score": 1,
+      "displayValue": "0 ms",
+      "rawValue": 0,
+      "extendedInfo": {
+        "value": []
+      },
+      "scoreDisplayMode": "numeric",
+      "informative": true,
+      "name": "uses-rel-preconnect",
+      "description": "Avoid multiple, costly round trips to any origin",
+      "helpText": "Consider adding preconnect or dns-prefetch resource hints to establish early connections to important third-party origins. [Learn more](https://developers.google.com/web/fundamentals/performance/resource-prioritization#preconnect).",
+      "details": {
+        "type": "table",
+        "headings": [],
+        "items": [],
+        "summary": {
+          "wastedMs": 0
+        }
+      }
+    },
     "font-display": {
       "score": 1,
       "displayValue": "",
@@ -4760,6 +4781,11 @@
           "group": "perf-hint"
         },
         {
+          "id": "uses-rel-preconnect",
+          "weight": 0,
+          "group": "perf-hint"
+        },
+        {
           "id": "time-to-first-byte",
           "weight": 0,
           "group": "perf-hint"
@@ -5347,6 +5373,6 @@
     }
   },
   "timing": {
-    "total": 830
+    "total": 2654
   }
 }
