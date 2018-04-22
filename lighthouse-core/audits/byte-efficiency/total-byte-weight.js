@@ -86,7 +86,6 @@ class TotalByteWeight extends ByteEfficiencyAudit {
         results.push(result);
       });
 
-      console.log(totalScriptBytes, BUNDLE_SIZE_THRESHOLD);
       if (totalScriptBytes > BUNDLE_SIZE_THRESHOLD) {
         scriptResults.forEach(result => {
           result.flagged = true;
