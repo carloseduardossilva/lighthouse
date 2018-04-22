@@ -6,7 +6,10 @@
 'use strict';
 
 const ByteEfficiencyAudit = require('./byte-efficiency-audit');
+const WebInspector = require('../../lib/web-inspector');
 const Util = require('../../report/v2/renderer/util');
+
+const BUNDLE_SIZE_THRESHOLD = 450 * 1024;
 
 class TotalByteWeight extends ByteEfficiencyAudit {
   /**
@@ -39,6 +42,17 @@ class TotalByteWeight extends ByteEfficiencyAudit {
   }
 
   /**
+   * Checks if record is a javascript asset and if it exceeds our bundle size limit
+   *
+   * @param {LH.WebInspector.NetworkRequest} record
+   * @return {boolean}
+   */
+  static hasExceededJSBundleSize(record) {
+    return record._resourceType === WebInspector.resourceTypes.Script
+      && record.transferSize > BUNDLE_SIZE_THRESHOLD;
+  }
+
+  /**
    * @param {!Artifacts} artifacts
    * @param {LH.Audit.Context} context
    * @return {!Promise<!AuditResult>}
@@ -60,6 +74,7 @@ class TotalByteWeight extends ByteEfficiencyAudit {
           url: record.url,
           totalBytes: record.transferSize,
           totalMs: ByteEfficiencyAudit.bytesToMs(record.transferSize, networkThroughput),
+          flagged: TotalByteWeight.hasExceededJSBundleSize(record),
         };
 
         totalBytes += result.totalBytes;
