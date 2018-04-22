@@ -57,7 +57,8 @@ class EfficientAnimatedContent extends ByteEfficiencyAudit {
       return {
         url: record.url,
         totalBytes: record.resourceSize,
-        wastedBytes: record.resourceSize * EfficientAnimatedContent.getPercentSavings(record.resourceSize),
+        wastedBytes: record.resourceSize *
+          EfficientAnimatedContent.getPercentSavings(record.resourceSize),
       };
     });
 
@@ -70,7 +71,13 @@ class EfficientAnimatedContent extends ByteEfficiencyAudit {
         granularity: 1,
         text: 'Transfer Size',
       },
-      {key: 'wastedBytes', itemType: 'bytes', displayUnit: 'kb', granularity: 1, text: 'Byte Savings'},
+      {
+        key: 'wastedBytes',
+        itemType: 'bytes',
+        displayUnit: 'kb',
+        granularity: 1,
+        text: 'Byte Savings',
+      },
     ];
 
     return {
