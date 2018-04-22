@@ -191,7 +191,7 @@ module.exports = [
           items: [
             {
               url: 'http://localhost:10200/dobetterweb/lighthouse-rotating.gif',
-              totalBytes: 934407,
+              totalBytes: 934285,
             },
           ],
         },
