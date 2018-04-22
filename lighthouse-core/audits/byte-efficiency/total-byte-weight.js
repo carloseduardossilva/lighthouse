@@ -42,14 +42,13 @@ class TotalByteWeight extends ByteEfficiencyAudit {
   }
 
   /**
-   * Checks if record is a javascript asset and if it exceeds our bundle size limit
+   * Checks if record is a javascript asset
    *
    * @param {LH.WebInspector.NetworkRequest} record
    * @return {boolean}
    */
-  static hasExceededJSBundleSize(record) {
-    return record._resourceType === WebInspector.resourceTypes.Script
-      && record.transferSize > BUNDLE_SIZE_THRESHOLD;
+  static isScript(record) {
+    return record._resourceType === WebInspector.resourceTypes.Script;
   }
 
   /**
@@ -64,7 +63,9 @@ class TotalByteWeight extends ByteEfficiencyAudit {
       artifacts.requestNetworkThroughput(devtoolsLogs),
     ]).then(([networkRecords, networkThroughput]) => {
       let totalBytes = 0;
+      let totalScriptBytes = 0;
       let results = [];
+      const scriptResults = [];
       networkRecords.forEach(record => {
         // exclude data URIs since their size is reflected in other resources
         // exclude unfinished requests since they won't have transfer size information
@@ -74,12 +75,24 @@ class TotalByteWeight extends ByteEfficiencyAudit {
           url: record.url,
           totalBytes: record.transferSize,
           totalMs: ByteEfficiencyAudit.bytesToMs(record.transferSize, networkThroughput),
-          flagged: TotalByteWeight.hasExceededJSBundleSize(record),
         };
+
+        if (TotalByteWeight.isScript(record)) {
+          totalScriptBytes += record.transferSize;
+          scriptResults.push(result);
+        }
 
         totalBytes += result.totalBytes;
         results.push(result);
       });
+
+      console.log(totalScriptBytes, BUNDLE_SIZE_THRESHOLD);
+      if (totalScriptBytes > BUNDLE_SIZE_THRESHOLD) {
+        scriptResults.forEach(result => {
+          result.flagged = true;
+        });
+      }
+
       const totalCompletedRequests = results.length;
       results = results.sort((itemA, itemB) => itemB.totalBytes - itemA.totalBytes).slice(0, 10);
 

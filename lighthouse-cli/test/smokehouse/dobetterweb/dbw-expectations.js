@@ -35,13 +35,13 @@ module.exports = [
         extendedInfo: {
           value: {
             results: {
-              length: 17,
+              length: 18,
             },
           },
         },
         details: {
           items: {
-            length: 17,
+            length: 18,
           },
         },
       },
@@ -182,6 +182,26 @@ module.exports = [
               displayedAspectRatio: /^480 x 57/,
             },
             length: 1,
+          },
+        },
+      },
+      'total-byte-weight': {
+        details: {
+          items: {
+            0: {
+              url: "http://localhost:10200/dobetterweb/dbw_large-file.js",
+              totalBytes: 359690,
+              flagged: true,
+            },
+            1: {
+              flagged: true,
+            },
+            2: {
+              flagged: true,
+            },
+            6: {
+              flagged: true,
+            },
           },
         },
       },

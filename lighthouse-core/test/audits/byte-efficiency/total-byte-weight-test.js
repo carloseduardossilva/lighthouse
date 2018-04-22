@@ -79,7 +79,7 @@ describe('Total byte weight audit', () => {
   it('should flag script requests which are exceeding the file size', () => {
     const artifacts = generateArtifacts([
       ['file.html', 30, WebInspector.resourceTypes.Document],
-      ['file.js', 451, WebInspector.resourceTypes.Script],
+      ['file.js', 446, WebInspector.resourceTypes.Script],
       ['file.jpg', 70, WebInspector.resourceTypes.Image],
       ['file-large.jpg', 1000, WebInspector.resourceTypes.Image],
       ['file-xlarge.jpg', 3000, WebInspector.resourceTypes.Image],
@@ -89,6 +89,7 @@ describe('Total byte weight audit', () => {
     return TotalByteWeight.audit(artifacts, {options}).then(result => {
       const results = result.details.items;
       assert.strictEqual(results[2].flagged, true);
+      assert.strictEqual(results[5].flagged, true);
     });
   });
 
