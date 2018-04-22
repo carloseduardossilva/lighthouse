@@ -3153,6 +3153,31 @@
         }
       }
     },
+    "efficient-animated-content": {
+      "score": 1,
+      "displayValue": "",
+      "rawValue": 0,
+      "extendedInfo": {
+        "value": {
+          "wastedMs": 0,
+          "wastedKb": 0,
+          "results": []
+        }
+      },
+      "scoreDisplayMode": "numeric",
+      "name": "efficient-animated-content",
+      "description": "Use a video formats for animated content",
+      "helpText": "Large GIFs are inefficient for delivering animated content. Consider using MPEG4/WebM videos for animations and PNG/WebP for static images instead of GIF to save network bytes. [Learn more](https://en.wikipedia.org/wiki/Video_alternative_to_GIF)",
+      "details": {
+        "type": "table",
+        "headings": [],
+        "items": [],
+        "summary": {
+          "wastedMs": 0,
+          "wastedBytes": 0
+        }
+      }
+    },
     "appcache-manifest": {
       "score": 0,
       "displayValue": "",
@@ -4775,6 +4800,11 @@
           "group": "perf-hint"
         },
         {
+          "id": "efficient-animated-content",
+          "weight": 0,
+          "group": "perf-hint"
+        },
+        {
           "id": "total-byte-weight",
           "weight": 0,
           "group": "perf-info"
@@ -5347,6 +5377,6 @@
     }
   },
   "timing": {
-    "total": 830
+    "total": 2309
   }
 }
